@@ -1,0 +1,16 @@
+{
+  "name": "treasureFE",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "https://github.com/jmtblei/treasureFE.git",
+  "author": "jmtblei <47536941+jmtblei@users.noreply.github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "dotenv": "^8.1.0"
+  }
+}
