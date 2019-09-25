@@ -75,7 +75,7 @@ function loopRooms() {
 
         traversalPath.push(nextMove);
         // send the post request to move
-        setTimeout(() => {
+        setTimeout(() => { // have to settimeout bc there is a cooldown to make request to move again
             advAxios
                 .post('move', { direction: nextMove})
                 .then(res => {
@@ -98,17 +98,37 @@ function loopRooms() {
                     });
                     // update graph with for current room with prevRoom
                     graph[newRoom][backMove] = prevRoom;
-                    cooldown = currentRoom.cooldown
+                    // gets the cooldown of the specific room
+                    cooldown = currentRoom.cooldown 
                     // recursively traverses
                     if (Object.keys(graph).length !== 500) {
                         console.log("there's still more rooms to explore");
                         setTimeout(() => {
                             loopRooms();
-                        }, cooldown * 1000);
+                        }, cooldown * 1000); // waits room cooldown * 1s before sending post request again
                     }
                 })
                 .catch(err => console.log(err.message));
         }, cooldown * 1000);
+    }
+    // handle dead ends
+    else if (directions.length == 0 && backwardsPath.length) {
+        console.log("this is a dead end or i've already visited this room. tracing my steps backwards now");
+        // save the last move and add the backwards move to the end of traversePath
+        const lastMove = backwardsPath.pop()
+        traversalPath.push(lastMove);
+        // send post request to continue moving
+        setTimeout(() => {
+            advAxios
+                .post('move', { direction: lastMove })
+                .then(res => {
+                    // set our current room
+                    currentRoom = res.data;
+                    cooldown = currentRoom.cooldown;
+                    console.log(`i moved back, i'm now in room ${currentRoom.room_id}`)
+                })
+                .catch(err => console.log(err.message))
+        }, cooldown * 1000) 
     }
 }
 
