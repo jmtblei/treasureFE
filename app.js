@@ -10,7 +10,8 @@ advAxios
     .then(res => {
         console.log('initializing', res.data);
         // set the current room to res.data
-        currentRoom = res.data
+        currentRoom = res.data;
+        cooldown = currentRoom.cooldown
     })
     .catch(err => console.log('init error', err));
 
@@ -41,15 +42,16 @@ let backwardsPath = [];
 // looping all rooms until we traverse all 500 rooms
 
 function loopRooms() {
+    let roomNum = currentRoom.room_id
     // add the current room's id to our graph and add it as a new key
-    if (!graph[currentRoom.room_id]) {
-        graph[currentRoom.room_id] = {};
+    if (!graph[roomNum]) {
+        graph[roomNum] = {};
     }
     // add the exits of current room id to graph
     currentRoom.exits.forEach(exit => {
         // if the exit is not listed, add the value as "?" to signify not traversed
-        if (graph[currentRoom.room_id][exit] == undefined) {
-            graph[currentRoom.room_id][exit] = "?"
+        if (graph[roomNum][exit] == undefined) {
+            graph[roomNum][exit] = "?"
         }
     });
 
@@ -58,8 +60,8 @@ function loopRooms() {
 
     // collect list of directions in current room id that hasn't been traversed yet (has value of "?")
     let directions = [];
-    for (let key in graph[currentRoom.room_id]) {
-        if (graph[currentRoom.room_id][key] == "?") {
+    for (let key in graph[roomNum]) {
+        if (graph[roomNum][key] == "?") {
             directions.push(key);
         }
     }
@@ -81,7 +83,7 @@ function loopRooms() {
                 .then(res => {
                     console.log('moving to a room', res.data)
                     // save the previous room's id and set it to the current
-                    let prevRoom = currentRoom.room_id
+                    let prevRoom = roomNum
                     currentRoom = res.data;
                     // update the value in graph of prevRoom
                     graph[prevRoom][nextMove] = currentRoom.room_id;
@@ -115,10 +117,10 @@ function loopRooms() {
     else if (directions.length == 0 && backwardsPath.length) {
         console.log("this is a dead end or i've already visited this room. tracing my steps backwards now");
         // save the last move and add the backwards move to the end of traversePath
-        const lastMove = backwardsPath.pop()
+        let lastMove = backwardsPath.pop()
         traversalPath.push(lastMove);
         // save the room id we're moving to as string for wise explorer
-        const lastRoom = graph[currentRoom.room_id][lastMove].toString();
+        let lastRoom = graph[roomNum][lastMove].toString();
         console.log("lastRoom", lastRoom)
         // send post request to continue moving
         setTimeout(() => {
@@ -127,8 +129,8 @@ function loopRooms() {
                 .then(res => {
                     // set our current room
                     currentRoom = res.data;
-                    cooldown = currentRoom.cooldown;
-                    console.log(`i moved back, i'm now in room ${currentRoom.room_id}`)
+                    cooldown = res.data.cooldown;
+                    console.log("i moved back, i'm now in room:", currentRoom.room_id, "i can move again in:", cooldown)
                     // recursively traverses
                     if (Object.keys(graph).length !== 500) {
                         console.log("that was a dead end. let's go another direction");
@@ -139,6 +141,10 @@ function loopRooms() {
                 })
                 .catch(err => console.log(err.message))
         }, cooldown * 1000) 
+    }
+    else if (directions.length == 0 && backwardsPath.length == 0) {
+        console.log("this is the end of the road", Object.keys(graph).length);
+        return graph;
     }
 }
 
