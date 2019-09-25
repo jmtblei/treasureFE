@@ -1,7 +1,8 @@
 const advAxios = require('./axiosConfig');
 
 // global variables
-let currentRoom = null
+let currentRoom = null;
+let cooldown = 20;
 
 // initializing the game
 advAxios
@@ -52,6 +53,9 @@ function loopRooms() {
         }
     });
 
+    console.log('list of rooms traversed', graph);
+    console.log('number of rooms traversed', Object.keys(graph).length);
+
     // collect list of directions in current room id that hasn't been traversed yet (has value of "?")
     let directions = [];
     for (let key in graph[currentRoom.room_id]) {
@@ -65,35 +69,50 @@ function loopRooms() {
         // get our next move from first path in directions and reset directions for the next room
         let nextMove = directions[0];
         directions = [];
+        // record the back movement and push it to backwardsPath
+        let backMove = backwards(nextMove);
+        backwardsPath.push(backMove);
 
         traversalPath.push(nextMove);
         // send the post request to move
-        advAxios
-            .post('move', { direction: nextMove})
-            .then(res => {
-                console.log('moving to a room', res.data)
-                // save the previous room's id and set it to the current
-                let prevRoom = currentRoom.room_id
-                currentRoom = res.data;
-                // update the value in graph of prevRoom
-                graph[prevRoom][nextMove] = currentRoom.room_id;
-                let newRoom = currentRoom.room_id;
-                // add new room id to graph
-                if (!graph[newRoom]) {
-                    graph[newRoom] = {};
-                }
-                // add the value of exits for newRoom
-                currentRoom.exits.forEach(exit => {
-                    if (!graph[newRoom][exit]) {
-                        graph[newRoom][exit] = "?";
+        setTimeout(() => {
+            advAxios
+                .post('move', { direction: nextMove})
+                .then(res => {
+                    console.log('moving to a room', res.data)
+                    // save the previous room's id and set it to the current
+                    let prevRoom = currentRoom.room_id
+                    currentRoom = res.data;
+                    // update the value in graph of prevRoom
+                    graph[prevRoom][nextMove] = currentRoom.room_id;
+                    let newRoom = currentRoom.room_id;
+                    // add new room id to graph
+                    if (!graph[newRoom]) {
+                        graph[newRoom] = {};
+                    }
+                    // add the value of exits for newRoom
+                    currentRoom.exits.forEach(exit => {
+                        if (!graph[newRoom][exit]) {
+                            graph[newRoom][exit] = "?";
+                        }
+                    });
+                    // update graph with for current room with prevRoom
+                    graph[newRoom][backMove] = prevRoom;
+                    cooldown = currentRoom.cooldown
+                    // recursively traverses
+                    if (Object.keys(graph).length !== 500) {
+                        console.log("there's still more rooms to explore");
+                        setTimeout(() => {
+                            loopRooms();
+                        }, cooldown * 1000);
                     }
                 })
-            })
-            .catch(err => console.log(err.message));
+                .catch(err => console.log(err.message));
+        }, cooldown * 1000);
     }
 }
 
 // set timeout; rooms need to initialize and load before moving
 setTimeout(() => { 
     loopRooms();
-}, 20000);
+}, cooldown * 1000);
