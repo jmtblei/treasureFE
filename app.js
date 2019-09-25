@@ -126,6 +126,13 @@ function loopRooms() {
                     currentRoom = res.data;
                     cooldown = currentRoom.cooldown;
                     console.log(`i moved back, i'm now in room ${currentRoom.room_id}`)
+                    // recursively traverses
+                    if (Object.keys(graph).length !== 500) {
+                        console.log("that was a dead end. let's go another direction");
+                        setTimeout(() => {
+                            loopRooms();
+                        }, cooldown * 1000);
+                    }
                 })
                 .catch(err => console.log(err.message))
         }, cooldown * 1000) 
