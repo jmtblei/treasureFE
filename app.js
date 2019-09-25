@@ -117,10 +117,13 @@ function loopRooms() {
         // save the last move and add the backwards move to the end of traversePath
         const lastMove = backwardsPath.pop()
         traversalPath.push(lastMove);
+        // save the room id we're moving to as string for wise explorer
+        const lastRoom = graph[currentRoom.room_id][lastMove].toString();
+        console.log("lastRoom", lastRoom)
         // send post request to continue moving
         setTimeout(() => {
             advAxios
-                .post('move', { direction: lastMove })
+                .post('move', { direction: lastMove, next_room_id: lastRoom })
                 .then(res => {
                     // set our current room
                     currentRoom = res.data;
