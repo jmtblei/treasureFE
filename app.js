@@ -131,6 +131,7 @@ function loopRooms() {
                     currentRoom = res.data;
                     cooldown = res.data.cooldown;
                     console.log("i moved back, i'm now in room:", currentRoom.room_id, "i can move again in:", cooldown)
+                    console.log("with:", currentRoom.items);
                     // recursively traverses
                     if (Object.keys(graph).length !== 500) {
                         console.log("that was a dead end. let's go another direction");
@@ -147,6 +148,20 @@ function loopRooms() {
         return graph;
     }
 }
+
+const getTreasure = treasure => {
+    setTimeout(() => {
+        advAxios
+        .post("pick-up", { name: treasure })
+        .then(res => {
+            console.log(res.data);
+            console.log("There's treasure here!")
+            coolDown = res.data.cooldown;
+        })
+        .catch(err)
+    }, coolDown * 1000);
+};
+
 
 // set timeout; rooms need to initialize and load before moving
 setTimeout(() => { 
