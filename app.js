@@ -58,6 +58,7 @@ function loopRooms() {
         }
     });
 
+
     console.log('list of rooms traversed', graph);
     console.log('number of rooms traversed', Object.keys(graph).length);
 
@@ -112,15 +113,25 @@ function loopRooms() {
                     if (Object.keys(graph).length !== 500) {
                         console.log("there's still more rooms to explore");
                         setTimeout(() => {
+                            if (treasureItems.length > 0) {
+                                console.log("treasure items: ", treasureItems)
+                                console.log("treasure items length: ", treasureItems.length)
+                                axios.all([
+                                    advAxios.post('take', {"name": "treasure"}),
+                                    advAxios.post('status')
+                                ])
+                                .then(axios.spread((takeRes, statusRes) => {
+                                    console.log("treasure take res: ", takeRes.data)
+                                    console.log("status res: ", statusRes.data)
+                                }))
+                                .catch(err => console.log(err.message))
+                            } 
                             loopRooms();
                         }, cooldown * 1000); // waits room cooldown * 1s before sending post request again
                     }
                 })
-                // .then((res) => {
-                //     console.log("take Response", res.data)
-                // }) 
                 .catch(err => console.log(err.message));
-        }, cooldown * 10000);
+            }, cooldown * 1000);   
     }
     // handle dead ends
     else if (directions.length == 0 && backwardsPath.length) {
@@ -155,15 +166,10 @@ function loopRooms() {
         console.log("this is the end of the road", Object.keys(graph).length);
         return graph;
     }
-}
-
-
-// set timeout; rooms need to initialize and load before moving
-setTimeout(() => { 
-    loopRooms();
-    console.log("treasureItems in array : ", treasureItems)
-    
-    axios.all([
+    else if (treasureItems.length > 0) {
+        console.log("treasure items: ", treasureItems)
+        console.log("treasure items length: ", treasureItems.length)
+        axios.all([
             advAxios.post('take', {"name": "treasure"}),
             advAxios.post('status')
         ])
@@ -172,5 +178,12 @@ setTimeout(() => {
             console.log("status res: ", statusRes.data)
         }))
         .catch(err => console.log(err.message))
+    } 
+}
+
+
+// set timeout; rooms need to initialize and load before moving
+setTimeout(() => { 
+    loopRooms();
     
 }, cooldown * 1000);
