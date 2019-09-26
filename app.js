@@ -152,7 +152,7 @@ function loopRooms() {
 const getTreasure = treasure => {
     setTimeout(() => {
         advAxios
-        .post("pick-up", { name: treasure })
+        .post("take", { name: treasure })
         .then(res => {
             console.log(res.data);
             console.log("There's treasure here!")
