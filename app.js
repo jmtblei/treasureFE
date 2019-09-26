@@ -1,4 +1,5 @@
 const advAxios = require('./axiosConfig');
+const axios = require('axios')
 
 // global variables
 let currentRoom = null;
@@ -163,11 +164,14 @@ setTimeout(() => {
     loopRooms();
     console.log("treasureItems in array : ", treasureItems)
     
-    advAxios
-            .post('take', {"name": "treasure"})
-            .then(res => {
-                console.log("treasure take res: ", res.data)
-            })
-            .catch(err => console.log(err.message))
+    axios.all([
+            advAxios.post('take', {"name": "treasure"}),
+            advAxios.post('status')
+        ])
+        .then(axios.spread((takeRes, statusRes) => {
+            console.log("treasure take res: ", takeRes.data)
+            console.log("status res: ", statusRes.data)
+        }))
+        .catch(err => console.log(err.message))
     
 }, cooldown * 1000);
