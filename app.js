@@ -149,34 +149,34 @@ function loopRooms() {
     }
 }
 
-function getTreasure(treasure) {
-    setTimeout(() => {
-        advAxios
-        .post("take", { name: treasure })
-        .then(res => {
-            console.log(res.data);
-            console.log("There's treasure here!")
-            coolDown = res.data.cooldown;
-        })
-        .catch(err)
-    }, coolDown * 1000);
-};
+// function getTreasure(treasure) {
+//     setTimeout(() => {
+//         advAxios
+//         .post("take", { name: treasure })
+//         .then(res => {
+//             console.log(res.data);
+//             console.log("There's treasure here!")
+//             coolDown = res.data.cooldown;
+//         })
+//         .catch(err)
+//     }, coolDown * 1000);
+// };
 
 
-// if room has items example: tiny treasure, take them
-if (currentRoom.items.length) {
-    setTimeout(() => {
-        advAxios
-        .post("status")
-        .then(res => {
-            console.log("Currently what you have:", res.data.inventory);
-            treasure = [...currentRoom.items];
-            console.log("picking up items:", treasure);
-            getTreasure(treasure[0]);
-        })
-        .catch(err)
-    }, coolDown * 1000);
-}
+// // if room has items example: tiny treasure, take them
+// if (currentRoom.items[0]) {
+//     setTimeout(() => {
+//         advAxios
+//         .post("status")
+//         .then(res => {
+//             console.log("Currently what you have:", res.data.inventory);
+//             treasure = [...currentRoom.items];
+//             console.log("picking up items:", treasure);
+//             getTreasure(treasure[0]);
+//         })
+//         .catch(err)
+//     }, coolDown * 1000);
+// }
 
 
 // set timeout; rooms need to initialize and load before moving
