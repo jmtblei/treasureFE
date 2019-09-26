@@ -1,4 +1,5 @@
 const advAxios = require('./axiosConfig');
+const axios = require('axios')
 
 // global variables
 var currentRoom = null;
@@ -41,6 +42,8 @@ var backwardsPath = [];
 
 // looping all rooms until we traverse all 500 rooms
 
+var treasureItems = [];
+
 function loopRooms() {
     var roomNum = currentRoom.room_id
     // add the current room's id to our graph and add it as a new key
@@ -55,8 +58,10 @@ function loopRooms() {
         }
     });
 
+
     console.log('list of rooms traversed', graph);
     console.log('number of rooms traversed', Object.keys(graph).length);
+
 
     // collect list of directions in current room id that hasn't been traversed yet (has value of "?")
     var directions = [];
@@ -85,22 +90,11 @@ function loopRooms() {
                     // save the previous room's id and set it to the current
                     var prevRoom = roomNum
                     currentRoom = res.data;
+                    treasureItems = res.data.items;
+                    console.log("treasure items", treasureItems)
                     // update the value in graph of prevRoom
                     graph[prevRoom][nextMove] = currentRoom.room_id;
                     var newRoom = currentRoom.room_id;
-                    // loot items if there are any
-                    if (currentRoom.items.length) {
-                        setTimeout(() => {
-                            advAxios
-                                .post('take', { name: 'treasure' })
-                                .then(res => {
-                                    res.data
-                                    console.log('looting this treasure');
-                                    cooldown = res.data.cooldown;
-                                })
-                                .catch(err => console.log(err.message))
-                        }, cooldown * 1000);
-                    }
                     // add new room id to graph
                     if (!graph[newRoom]) {
                         graph[newRoom] = {};
@@ -119,12 +113,25 @@ function loopRooms() {
                     if (Object.keys(graph).length !== 500) {
                         console.log("there's still more rooms to explore");
                         setTimeout(() => {
+                            if (treasureItems.length > 0) {
+                                console.log("treasure items: ", treasureItems)
+                                console.log("treasure items length: ", treasureItems.length)
+                                axios.all([
+                                    advAxios.post('take', {"name": "treasure"}),
+                                    advAxios.post('status')
+                                ])
+                                .then(axios.spread((takeRes, statusRes) => {
+                                    console.log("treasure take res: ", takeRes.data)
+                                    console.log("status res: ", statusRes.data)
+                                }))
+                                .catch(err => console.log(err.message))
+                            } 
                             loopRooms();
                         }, cooldown * 1000); // waits room cooldown * 1s before sending post request again
                     }
                 })
                 .catch(err => console.log(err.message));
-        }, cooldown * 1000);
+            }, cooldown * 1000);   
     }
     // handle dead ends
     else if (directions.length == 0 && backwardsPath.length) {
@@ -147,7 +154,7 @@ function loopRooms() {
                     console.log("with:", currentRoom.items);
                     // recursively traverses
                     if (Object.keys(graph).length !== 500) {
-                        console.log("that was a dead end. let's go another direction");
+                        console.log("that was a dead end. var's go another direction");
                         setTimeout(() => {
                             loopRooms();
                         }, cooldown * 1000);
@@ -160,6 +167,19 @@ function loopRooms() {
         console.log("this is the end of the road", Object.keys(graph).length);
         return graph;
     }
+    else if (treasureItems.length > 0) {
+        console.log("treasure items: ", treasureItems)
+        console.log("treasure items length: ", treasureItems.length)
+        axios.all([
+            advAxios.post('take', {"name": "treasure"}),
+            advAxios.post('status')
+        ])
+        .then(axios.spread((takeRes, statusRes) => {
+            console.log("treasure take res: ", takeRes.data)
+            console.log("status res: ", statusRes.data)
+        }))
+        .catch(err => console.log(err.message))
+    } 
 }
 
 // function getTreasure(treasure) {
@@ -195,4 +215,5 @@ function loopRooms() {
 // set timeout; rooms need to initialize and load before moving
 setTimeout(() => { 
     loopRooms();
+    
 }, cooldown * 1000);
