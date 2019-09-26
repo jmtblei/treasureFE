@@ -149,7 +149,7 @@ function loopRooms() {
     }
 }
 
-const getTreasure = treasure => {
+function getTreasure(treasure) {
     setTimeout(() => {
         advAxios
         .post("take", { name: treasure })
@@ -161,6 +161,22 @@ const getTreasure = treasure => {
         .catch(err)
     }, coolDown * 1000);
 };
+
+
+// if room has items example: tiny treasure, take them
+if (currentRoom.items.length) {
+    setTimeout(() => {
+        advAxios
+        .post("status")
+        .then(res => {
+            console.log("Currently what you have:", res.data.inventory);
+            treasure = [...currentRoom.items];
+            console.log("picking up items:", treasure);
+            getTreasure(treasure[0]);
+        })
+        .catch(err)
+    }, coolDown * 1000);
+}
 
 
 // set timeout; rooms need to initialize and load before moving
