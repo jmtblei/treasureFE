@@ -158,7 +158,6 @@ function loopRooms() {
 }
 
 
-
 // set timeout; rooms need to initialize and load before moving
 setTimeout(() => { 
     loopRooms();
