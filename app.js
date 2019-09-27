@@ -166,19 +166,6 @@ function loopRooms() {
         console.log("this is the end of the road", Object.keys(graph).length);
         return graph;
     }
-    else if (treasureItems.length > 0) {
-        console.log("treasure items: ", treasureItems)
-        console.log("treasure items length: ", treasureItems.length)
-        axios.all([
-            advAxios.post('take', {"name": "treasure"}),
-            advAxios.post('status')
-        ])
-        .then(axios.spread((takeRes, statusRes) => {
-            console.log("treasure take res: ", takeRes.data)
-            console.log("status res: ", statusRes.data)
-        }))
-        .catch(err => console.log(err.message))
-    } 
 }
 
 
